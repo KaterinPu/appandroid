@@ -6,10 +6,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment // IMPORTANTE: Para usar Fragments
-import com.example.tarea_21.Fragments.InicioFragment // IMPORTANTE: Tu pantalla de productos
+import androidx.fragment.app.Fragment
+import com.example.tarea_21.Fragments.InicioFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import androidx.appcompat.app.ActionBarDrawerToggle
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,16 +24,32 @@ class MainActivity : AppCompatActivity() {
         val navView = findViewById<NavigationView>(R.id.nav_view)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        // 1. CARGAR EL FRAGMENT DE INICIO POR DEFECTO
-        // Esto hace que los productos aparezcan apenas abres la app
+        // 1. CONECTAMOS LA BARRA (TOOLBAR)
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        // 2. CREAMOS EL BOTÓN HAMBURGUESA (El "Toggle")
+        // Esto es lo que físicamente dibuja las tres rayitas
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            0,
+            0
+        )
+
+        // 3. SE LO PEGAMOS AL MENÚ LATERAL Y LO DIBUJAMOS
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState() // ¡ESTA LÍNEA ES LA QUE HACE APARECER EL ÍCONO!
+
+        // 4. CARGAR EL FRAGMENT DE INICIO POR DEFECTO
         if (savedInstanceState == null) {
             cambiarPantalla(InicioFragment())
         }
 
-        // 2. CONFIGURAR EL MENÚ LATERAL (DRAWER)
+        // 5. CONFIGURAR EL MENÚ LATERAL (DRAWER)
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                // Aquí podrías crear otros Fragments después, por ahora cargamos Inicio
                 R.id.menu_perfil -> mostrarMensaje("Mi Perfil")
                 R.id.menu_configuracion -> mostrarMensaje("Configuración")
                 R.id.menu_soporte -> mostrarMensaje("Soporte")
@@ -42,10 +59,9 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // 3. CONFIGURAR EL MENÚ INFERIOR (BOTTOM NAV)
+        // 6. CONFIGURAR EL MENÚ INFERIOR (BOTTOM NAV)
         bottomNav.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                // CUANDO TOCAS INICIO, CARGA TU LISTA DE PRODUCTOS
                 R.id.nav_inicio -> cambiarPantalla(InicioFragment())
                 R.id.nav_buscar -> mostrarMensaje("Buscando...")
                 R.id.nav_favoritos -> mostrarMensaje("Tus favoritos")
