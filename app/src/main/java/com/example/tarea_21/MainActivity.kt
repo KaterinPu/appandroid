@@ -11,6 +11,7 @@ import com.example.tarea_21.Fragments.InicioFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.ActionBarDrawerToggle
+import com.example.tarea_21.Fragments.EditarPerfilFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         // 5. CONFIGURAR EL MENÚ LATERAL (DRAWER)
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.menu_perfil -> mostrarMensaje("Mi Perfil")
+                R.id.menu_perfil -> cambiarPantalla(EditarPerfilFragment())
                 R.id.menu_configuracion -> mostrarMensaje("Configuración")
                 R.id.menu_soporte -> mostrarMensaje("Soporte")
                 R.id.menu_salir -> finish()
