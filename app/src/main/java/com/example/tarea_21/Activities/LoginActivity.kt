@@ -6,80 +6,89 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.tarea_21.ClienteSupabase
 import com.example.tarea_21.MainActivity
 import com.example.tarea_21.R
-
-// Imports perfectos de la versión 3.0.0
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
-
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_login)
 
-        // 1. BUSCAMOS LOS CAMPOS DE TEXTO
-        val etCorreo = findViewById<EditText>(R.id.etCorreoLogin) // Cambia este ID si es diferente
-        val etContrasena = findViewById<EditText>(R.id.etPasswordLogin) // Cambia este ID si es diferente
+        //Configuramos la huella apenas abre la app
+        configurarHuella()
 
-        // 2. LÓGICA DEL BOTÓN INGRESAR
-        val btnIngresar = findViewById<Button>(R.id.btnIngresarLogin)
-        btnIngresar.setOnClickListener {
-            val correo = etCorreo.text.toString()
-            val contrasena = etContrasena.text.toString()
+        //Botón Ingresar Tradicional
+        findViewById<Button>(R.id.btnIngresarLogin).setOnClickListener {
+            iniciarSesion()
+        }
 
-            // Validamos que no estén vacíos
-            if (correo.isEmpty() || contrasena.isEmpty()) {
-                Toast.makeText(this, "Ingresa tu correo y contraseña", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+        //Texto para ir a Registro
+        findViewById<TextView>(R.id.txtRegistrarse).setOnClickListener {
+            startActivity(Intent(this, RegistroActivity::class.java))
+        }
+    }
 
-            btnIngresar.isEnabled = false
-            Toast.makeText(this, "Iniciando sesión...", Toast.LENGTH_SHORT).show()
+    private fun iniciarSesion() {
+        val correo = findViewById<EditText>(R.id.etCorreoLogin).text.toString().trim()
+        val contrasena = findViewById<EditText>(R.id.etPasswordLogin).text.toString()
 
-            // Conectamos con Supabase
-            lifecycleScope.launch {
-                try {
-                    // Magia de la versión 3.0.0: auth en lugar de gotrue
-                    ClienteSupabase.cliente.auth.signInWith(Email) {
-                        email = correo
-                        password = contrasena
-                    }
+        if (correo.isEmpty() || contrasena.isEmpty()) {
+            Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-                    // Si sale bien, saltamos al Main
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@LoginActivity, "¡Bienvenida!", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        // Esto nos dirá el error REAL (ej: "Invalid login credentials", "Network error", etc.)
-                        Toast.makeText(this@LoginActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                        btnIngresar.isEnabled = true
-                        // Imprime el error en la consola de Android Studio para que lo veas allá también
-                        println("DEBUG_SUPABASE: ${e.message}")
-                    }
+        lifecycleScope.launch {
+            try {
+                ClienteSupabase.cliente.auth.signInWith(Email) {
+                    email = correo
+                    password = contrasena
                 }
+                irAMain()
+            } catch (e: Exception) {
+                Toast.makeText(this@LoginActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
+    }
 
-        // 3. TEXTO DE REGISTRARSE
-        val txtRegistrarse = findViewById<TextView>(R.id.txtRegistrarse)
-        txtRegistrarse.setOnClickListener {
-            val intent = Intent(this, RegistroActivity::class.java)
-            startActivity(intent)
+    private fun configurarHuella() {
+        val executor = ContextCompat.getMainExecutor(this)
+        val biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    Toast.makeText(this@LoginActivity, "¡Huella reconocida!", Toast.LENGTH_SHORT).show()
+                    irAMain()
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    //No hacemos nada para que el usuario pueda seguir intentando
+                }
+            })
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("ACTIVACoop Biométrico")
+            .setSubtitle("Usa tu huella para ingresar")
+            .setNegativeButtonText("Usar contraseña")
+            .build()
+
+        // Ahora sí, el botón existe en el XML
+        findViewById<Button>(R.id.btn_huella).setOnClickListener {
+            biometricPrompt.authenticate(promptInfo)
         }
+    }
+
+    private fun irAMain() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finishAffinity()
     }
 }

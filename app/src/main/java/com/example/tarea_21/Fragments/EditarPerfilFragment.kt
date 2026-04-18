@@ -52,6 +52,7 @@ class EditarPerfilFragment : Fragment() {
 
                 if (correoActual != null) {
                     // Buscamos los datos en la tabla
+
                     val datos = ClienteSupabase.cliente.postgrest["usuarios"].select {
                         filter {
                             eq("correo", correoActual)

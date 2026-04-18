@@ -54,6 +54,10 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:auth-kt:3.0.0")
     implementation("io.ktor:ktor-client-android:2.3.11")
 
+
+    implementation(libs.google.id)
+    implementation(libs.credential.manager)
+    implementation(libs.credential.manager.play)
     // Supabase Versión 3
     implementation("io.github.jan-tennert.supabase:postgrest-kt:3.0.0")
     implementation("io.github.jan-tennert.supabase:auth-kt:3.0.0")
@@ -66,4 +70,7 @@ dependencies {
 
     // Serialización de Kotlin
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+
+    // Librería oficial para biometría (Huella y Rostro)
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
 }
